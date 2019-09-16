@@ -115,9 +115,7 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32L072xx \
--DUSE_HAL_DRIVER \
--DSTM32L072xx
+-DSTM32L072xx 
 
 
 # AS includes
@@ -129,8 +127,7 @@ C_INCLUDES =  \
 -IDrivers/STM32L0xx_HAL_Driver/Inc \
 -IDrivers/STM32L0xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32L0xx/Include \
--IDrivers/CMSIS/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include 
 
 
 # compile gcc flags
