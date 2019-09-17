@@ -55,6 +55,9 @@
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+UART_HandleTypeDef *husart2;
+__IO ITStatus UartReady = RESET;
+/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
@@ -94,37 +97,42 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_DMA_Init();
+  MX_DMA_Init();
   MX_RTC_Init();
   //MX_SPI1_Init();
-  //MX_USART2_UART_Init();
+  husart2 = MX_USART2_UART_Init();
   //MX_I2C2_Init();
   //MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
-  /* USER CODE END 2 */
+  //Turn Off User LEDS
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //LD1
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); //LD2
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); //LD3
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); //LD4
 
+  uint8_t startMsg[] = "*** LongFi Demo ***";
+  /* User start transmission data through "TxBuffer" buffer */
+  if (HAL_UART_Transmit_DMA(husart2, startMsg, sizeof(startMsg)) != HAL_OK)
+  {
+    /* Transfer error in transmission process */
+    Error_Handler();
+  }  
+
+  while(UartReady != SET)
+  {
+  }
+
+  UartReady = RESET;
+
+  /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
-
-    HAL_Delay(500);
-
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
     HAL_Delay(500);
-
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
-
-    HAL_Delay(500);
-
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
-
-    HAL_Delay(500);
-    /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -180,7 +188,48 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+  * @brief  Tx Transfer completed callback
+  * @param  huart: UART handle.
+  * @note   This example shows a simple way to report end of DMA Tx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Turn LED1 on: Transfer in transmission process is correct */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); 
 
+  UartReady = SET;
+}
+
+/**
+  * @brief  Rx Transfer completed callback
+  * @param  huart: UART handle
+  * @note   This example shows a simple way to report end of DMA Rx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Turn LED2 on: Transfer in reception process is correct */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+  UartReady = SET;
+}
+
+/**
+  * @brief  UART error callbacks
+  * @param  huart: UART handle
+  * @note   This example shows a simple way to report transfer error, and you can
+  *         add your own implementation.
+  * @retval None
+  */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+  /* Turn LED3 on: Transfer error in reception/transmission process */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+}
 /* USER CODE END 4 */
 
 /**
@@ -191,7 +240,11 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  /* Turn LD4 on */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
