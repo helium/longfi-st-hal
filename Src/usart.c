@@ -29,7 +29,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USART2 init function */
 
-UART_HandleTypeDef* MX_USART2_UART_Init(void)
+void MX_USART2_UART_Init(void)
 {
 
   huart2.Instance = USART2;

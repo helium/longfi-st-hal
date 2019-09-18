@@ -40,6 +40,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+enum {
+	TRANSFER_WAIT,
+	TRANSFER_COMPLETE,
+	TRANSFER_ERROR
+};
 
 /* USER CODE END PD */
 
@@ -51,11 +56,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+/* transfer state */
+__IO uint32_t wTransferState = TRANSFER_WAIT;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-UART_HandleTypeDef *husart2;
 __IO ITStatus UartReady = RESET;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -99,8 +105,8 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_RTC_Init();
-  //MX_SPI1_Init();
-  husart2 = MX_USART2_UART_Init();
+  MX_SPI1_Init();
+  MX_USART2_UART_Init();
   //MX_I2C2_Init();
   //MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
@@ -111,9 +117,11 @@ int main(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); //LD3
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); //LD4
 
+  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+
   uint8_t startMsg[] = "*** LongFi Demo ***";
   /* User start transmission data through "TxBuffer" buffer */
-  if (HAL_UART_Transmit_DMA(husart2, startMsg, sizeof(startMsg)) != HAL_OK)
+  if (HAL_UART_Transmit_DMA(&huart2, startMsg, sizeof(startMsg)) != HAL_OK)
   {
     /* Transfer error in transmission process */
     Error_Handler();
@@ -124,6 +132,59 @@ int main(void)
   }
 
   UartReady = RESET;
+
+  //Radio Reset and Turn On
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET); 
+
+  HAL_Delay(1);
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+
+  HAL_Delay(6);
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+
+  HAL_Delay(1);
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+
+  uint8_t spiTx[] = {0x32, 0};
+  uint8_t spiRx[2];
+
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+
+  if(HAL_SPI_TransmitReceive_DMA(&hspi1, (uint8_t*)spiTx, (uint8_t *)spiRx, 2) != HAL_OK)
+  {
+    /* Transfer error in transmission process */
+    Error_Handler();
+  }
+
+  while (wTransferState == TRANSFER_WAIT)
+  {
+  }
+  
+  switch(wTransferState)
+  {
+    case TRANSFER_COMPLETE :
+
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+      if (HAL_UART_Transmit_DMA(&huart2, spiRx, sizeof(spiRx)) != HAL_OK)
+      {
+        /* Transfer error in transmission process */
+        Error_Handler();
+      }  
+
+      while(UartReady != SET)
+      {
+      }
+
+      UartReady = RESET;
+    break;
+    default : 
+      Error_Handler();
+    break;
+  }
 
   /* USER CODE END 2 */
   /* Infinite loop */
@@ -188,6 +249,31 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+  * @brief  TxRx Transfer completed callback.
+  * @param  hspi: SPI handle
+  * @note   This example shows a simple way to report end of DMA TxRx transfer, and 
+  *         you can add your own implementation. 
+  * @retval None
+  */
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  wTransferState = TRANSFER_COMPLETE;
+}
+
+/**
+  * @brief  SPI error callbacks.
+  * @param  hspi: SPI handle
+  * @note   This example shows a simple way to report transfer error, and you can
+  *         add your own implementation.
+  * @retval None
+  */
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
+{
+  wTransferState = TRANSFER_ERROR;
+}
+
 /**
   * @brief  Tx Transfer completed callback
   * @param  huart: UART handle.
