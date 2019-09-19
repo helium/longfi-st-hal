@@ -134,7 +134,6 @@ int main(void)
   UartReady = RESET;
 
   //Radio Reset and Turn On
-
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET); 
 
   HAL_Delay(1);
@@ -248,7 +247,18 @@ void SystemClock_Config(void)
   }
 }
 
-/* USER CODE BEGIN 4 */
+/**
+  * @brief EXTI line detection callbacks
+  * @param GPIO_Pin: Specifies the pins connected EXTI line
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == GPIO_PIN_4)
+  {
+    //Radio DI0 Interrupt
+  }
+}
 
 /**
   * @brief  TxRx Transfer completed callback.
