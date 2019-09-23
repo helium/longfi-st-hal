@@ -66,7 +66,16 @@ Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_dma.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
-Src/system_stm32l0xx.c  
+Src/system_stm32l0xx.c \
+Drivers/longfi-device/longfi.c \
+Drivers/longfi-device/board.c \
+Drivers/longfi-device/radio/sx1276/sx1276.c \
+Drivers/longfi-device/radio/sx1276/sx1276-board.c \
+Drivers/longfi-device/radio/sx1272/sx1272.c \
+Drivers/longfi-device/radio/sx1272/sx1272-board.c \
+Drivers/longfi-device/radio/sx126x/sx126x.c \
+Drivers/longfi-device/radio/sx126x/sx126x-board.c \
+Drivers/longfi-device/radio/sx126x/radio.c 
 
 # ASM sources
 ASM_SOURCES =  \
@@ -127,7 +136,8 @@ C_INCLUDES =  \
 -IDrivers/STM32L0xx_HAL_Driver/Inc \
 -IDrivers/STM32L0xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32L0xx/Include \
--IDrivers/CMSIS/Include 
+-IDrivers/CMSIS/Include \
+-IDrivers/longfi-device
 
 
 # compile gcc flags

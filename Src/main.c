@@ -1,24 +1,3 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma.h"
 #include "i2c.h"
@@ -28,112 +7,26 @@
 #include "usart.h"
 #include "gpio.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
+#include "longfi.h"
+#include "board.h"
+#include "longfi.h"
+#include "radio/sx1276/sx1276.h"
 
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
 enum {
 	TRANSFER_WAIT,
 	TRANSFER_COMPLETE,
 	TRANSFER_ERROR
 };
 
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-/* transfer state */
 __IO uint32_t wTransferState = TRANSFER_WAIT;
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 __IO ITStatus UartReady = RESET;
-/* Private function prototypes -----------------------------------------------*/
+static volatile bool DIO0FIRED = false;
+
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
+void radio_reset(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-  
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_RTC_Init();
-  MX_SPI1_Init();
-  MX_USART2_UART_Init();
-  //MX_I2C2_Init();
-  //MX_TIM6_Init();
-  /* USER CODE BEGIN 2 */
-
-  //Turn Off User LEDS
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //LD1
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); //LD2
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); //LD3
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); //LD4
-
-  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-
-  uint8_t startMsg[] = "*** LongFi Demo ***";
-  /* User start transmission data through "TxBuffer" buffer */
-  if (HAL_UART_Transmit_DMA(&huart2, startMsg, sizeof(startMsg)) != HAL_OK)
-  {
-    /* Transfer error in transmission process */
-    Error_Handler();
-  }  
-
-  while(UartReady != SET)
-  {
-  }
-
-  UartReady = RESET;
-
-  //Radio Reset and Turn On
+  //Radio Reset
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET); 
 
   HAL_Delay(1);
@@ -147,55 +40,145 @@ int main(void)
   HAL_Delay(1);
 
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+}
 
-  uint8_t spiTx[] = {0x32, 0};
-  uint8_t spiRx[2];
+FlagStatus SpiGetFlag( uint16_t flag )
+{
+    FlagStatus bitstatus = RESET;
 
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    // Check the status of the specified SPI flag
+    if( ( hspi1.Instance->SR & flag ) != ( uint16_t )RESET )
+    {
+        // SPI_I2S_FLAG is set
+        bitstatus = SET;
+    }
+    else
+    {
+        // SPI_I2S_FLAG is reset
+        bitstatus = RESET;
+    }
+    // Return the SPI_I2S_FLAG status
+    return  bitstatus;
+}
 
-  if(HAL_SPI_TransmitReceive_DMA(&hspi1, (uint8_t*)spiTx, (uint8_t *)spiRx, 2) != HAL_OK)
+uint16_t DiscoverySpiInOut(Spi_t *s, uint16_t outData){
+    uint8_t rxData = 0;
+
+    __HAL_SPI_ENABLE( &hspi1 );
+
+    while( SpiGetFlag( SPI_FLAG_TXE ) == RESET );
+    hspi1.Instance->DR = ( uint16_t ) ( outData & 0xFF );
+
+    while( SpiGetFlag( SPI_FLAG_RXNE ) == RESET );
+    rxData = ( uint16_t ) hspi1.Instance->DR;
+
+    return( rxData );
+}
+
+void DiscoveryDelayMs(uint32_t ms){
+    HAL_Delay(ms);
+}
+
+void DiscoveryGpioInit(Gpio_t *obj,
+              PinNames pin,
+              PinModes mode,
+              PinConfigs config,
+              PinTypes pin_type,
+              uint32_t val){}
+
+
+
+void DiscoveryGpioWrite(Gpio_t *obj, uint32_t val){
+    if (val == 0) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+
+    } else {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+    }
+}
+
+uint32_t DiscoveryGpioRead(Gpio_t *obj){
+    return 0;
+}
+
+
+void DiscoveryGpioSetInterrupt(Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler){
+}
+
+static BoardBindings_t DiscoveryBindings  = {
+    .spi_in_out = &DiscoverySpiInOut,
+    .gpio_init = &DiscoveryGpioInit,
+    .gpio_write = &DiscoveryGpioWrite,
+    .gpio_read = &DiscoveryGpioRead,
+    .gpio_set_interrupt = &DiscoveryGpioSetInterrupt,
+    .delay_ms = &DiscoveryDelayMs,
+};
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_RTC_Init();
+  MX_SPI1_Init();
+  MX_USART2_UART_Init();
+  //MX_I2C2_Init();
+  //MX_TIM6_Init();
+
+  // Turn Off User LEDS
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //LD1
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); //LD2
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET); //LD3
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET); //LD4
+
+  // SPI1 NSS SET HIGH
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+
+  uint8_t startMsg[] = "*** LongFi Demo ***";
+  if (HAL_UART_Transmit_DMA(&huart2, startMsg, sizeof(startMsg)) != HAL_OK)
   {
-    /* Transfer error in transmission process */
     Error_Handler();
-  }
+  }  
 
-  while (wTransferState == TRANSFER_WAIT)
+  while(UartReady != SET)
   {
   }
-  
-  switch(wTransferState)
-  {
-    case TRANSFER_COMPLETE :
 
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-      if (HAL_UART_Transmit_DMA(&huart2, spiRx, sizeof(spiRx)) != HAL_OK)
-      {
-        /* Transfer error in transmission process */
-        Error_Handler();
-      }  
+  UartReady = RESET;
 
-      while(UartReady != SET)
-      {
-      }
+  Radio_t radio = SX1276RadioNew();
 
-      UartReady = RESET;
-    break;
-    default : 
-      Error_Handler();
-    break;
-  }
+  radio_reset();
 
-  /* USER CODE END 2 */
+  RfConfig_t config = {
+      .oui = 1234,
+      .device_id = 99,
+  };
+
+  LongFi_t handle = longfi_new_handle(&DiscoveryBindings, &radio, config);
+  longfi_init(&handle);
+
+  uint8_t data[6] = {1, 2, 3, 4, 5, 6};
+
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1)
   {
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
     HAL_Delay(500);
-    /* USER CODE BEGIN 3 */
+
+    longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
   }
-  /* USER CODE END 3 */
 }
 
 /**
@@ -257,6 +240,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   if (GPIO_Pin == GPIO_PIN_4)
   {
     //Radio DI0 Interrupt
+    DIO0FIRED = true;
   }
 }
 
@@ -293,9 +277,6 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
   */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-  /* Turn LED1 on: Transfer in transmission process is correct */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); 
-
   UartReady = SET;
 }
 
@@ -308,9 +289,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  /* Turn LED2 on: Transfer in reception process is correct */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
-
   UartReady = SET;
 }
 
@@ -323,10 +301,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
-  /* Turn LED3 on: Transfer error in reception/transmission process */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
 }
-/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
@@ -334,14 +309,11 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
   */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
   /* Turn LD4 on */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
   while (1)
   {
   }
-  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -360,5 +332,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
