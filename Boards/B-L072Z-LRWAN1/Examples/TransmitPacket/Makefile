@@ -30,6 +30,7 @@ OPT = -Og
 #######################################
 # Build path
 BUILD_DIR = build
+DRIVERS_DIR = ../../../../Drivers
 
 ######################################
 # source
@@ -46,36 +47,36 @@ Src/tim.c \
 Src/usart.c \
 Src/stm32l0xx_it.c \
 Src/stm32l0xx_hal_msp.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_i2c.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_i2c_ex.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc_ex.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_spi.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim_ex.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart_ex.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc_ex.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash_ramfunc.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash_ex.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_gpio.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_dma.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
-Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_i2c.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_i2c_ex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc_ex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_spi.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim_ex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart_ex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc_ex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash_ramfunc.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_flash_ex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_gpio.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_dma.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
+DRIVERS_DIR/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
 Src/system_stm32l0xx.c \
-Drivers/longfi-device/longfi.c \
-Drivers/longfi-device/board.c \
-Drivers/longfi-device/radio/sx1276/sx1276.c \
-Drivers/longfi-device/radio/sx1276/sx1276-board.c \
-Drivers/longfi-device/radio/sx1272/sx1272.c \
-Drivers/longfi-device/radio/sx1272/sx1272-board.c \
-Drivers/longfi-device/radio/sx126x/sx126x.c \
-Drivers/longfi-device/radio/sx126x/sx126x-board.c \
-Drivers/longfi-device/radio/sx126x/radio.c 
+DRIVERS_DIR/longfi-device/longfi.c \
+DRIVERS_DIR/longfi-device/board.c \
+DRIVERS_DIR/longfi-device/radio/sx1276/sx1276.c \
+DRIVERS_DIR/longfi-device/radio/sx1276/sx1276-board.c \
+DRIVERS_DIR/longfi-device/radio/sx1272/sx1272.c \
+DRIVERS_DIR/longfi-device/radio/sx1272/sx1272-board.c \
+DRIVERS_DIR/longfi-device/radio/sx126x/sx126x.c \
+DRIVERS_DIR/longfi-device/radio/sx126x/sx126x-board.c \
+DRIVERS_DIR/longfi-device/radio/sx126x/radio.c 
 
 # ASM sources
 ASM_SOURCES =  \
@@ -133,11 +134,11 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -IInc \
--IDrivers/STM32L0xx_HAL_Driver/Inc \
--IDrivers/STM32L0xx_HAL_Driver/Inc/Legacy \
--IDrivers/CMSIS/Device/ST/STM32L0xx/Include \
--IDrivers/CMSIS/Include \
--IDrivers/longfi-device
+-I../../../../Drivers/STM32L0xx_HAL_Driver/Inc \
+-I../../../../Drivers/STM32L0xx_HAL_Driver/Inc/Legacy \
+-I../../../../Drivers/CMSIS/Device/ST/STM32L0xx/Include \
+-I../../../../Drivers/CMSIS/Include \
+-I../../../../Drivers/longfi-device
 
 
 # compile gcc flags
