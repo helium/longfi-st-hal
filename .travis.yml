@@ -1,7 +1,9 @@
  
-language: cpp
+language: c
 dist: bionic
 compiler: gcc
+
+before_script: cd Boards/B-L072Z-LRWAN1/Examples/TransmitPacket
 
 script:
   - make
