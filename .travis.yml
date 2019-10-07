@@ -1,0 +1,7 @@
+ 
+language: cpp
+dist: bionic
+compiler: gcc
+
+script:
+  - make
