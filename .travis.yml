@@ -17,8 +17,8 @@ install:
   - tar -jxf gcc.tar.bz2 --strip=1
   - popd
   - export PATH=$HOME/arm-gcc-toolchain/bin:$PATH
-  
-before_script: c
+
+before_script:
   - arm-none-eabi-gcc --version
   - cd Boards/B-L072Z-LRWAN1/Examples/TransmitPacket
 
