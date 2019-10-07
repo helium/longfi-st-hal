@@ -1,4 +1,7 @@
 # longfi-st-hal
+
+[![Build Status](https://travis-ci.com/helium/longfi-st-hal.svg?token=bzKc8EpW7xxqudyhDiz1&branch=master)](https://travis-ci.com/helium/longfi-st-hal)
+
 LongFi Examples Using ST HAL Libraries
 
 ## B-L072Z-LRWAN1 - ST STM32L0 Discovery kit
