@@ -114,6 +114,8 @@ static BoardBindings_t DiscoveryBindings  = {
     .delay_ms = &DiscoveryDelayMs,
 };
 
+static volatile bool transmit_packet = false;
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -133,7 +135,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   //MX_I2C2_Init();
-  //MX_TIM6_Init();
+  MX_TIM6_Init();
 
   // Turn Off User LEDS
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //LD1
@@ -170,6 +172,15 @@ int main(void)
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
 
+  // Start Timer 6 @ 2Hz 
+  if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
+  {
+    /* Starting Error */
+    Error_Handler();
+  }
+  
+  longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+
   /* Infinite loop */
   while (1)
   {
@@ -177,7 +188,11 @@ int main(void)
 
     HAL_Delay(500);
 
-    longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+    if(transmit_packet == true)
+    {
+      longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+      transmit_packet = false;
+    }
   }
 }
 
@@ -228,6 +243,21 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+   HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
+
+   if(DIO0FIRED == true)
+   {
+     transmit_packet = true;
+   }
 }
 
 /**
