@@ -43,7 +43,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   //MX_I2C2_Init();
-  MX_TIM6_Init();
+  //MX_TIM6_Init();
 
   // Turn Off User LEDS
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //LD1
@@ -79,13 +79,6 @@ int main(void)
   longfi_init(&handle);
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
-
-  // Start Timer 6 @ 2Hz
-  if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
-  {
-    /* Starting Error */
-    Error_Handler();
-  }
 
   // Initial Packet Transmit
   longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
@@ -190,6 +183,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   {
     //Radio DI0 Interrupt
     DIO0FIRED = true;
+  }
+  
+  if(GPIO_Pin == GPIO_PIN_2)
+  {
+    if (DIO0FIRED == true)
+    {
+      transmit_packet = true;
+    }
   }
 }
 
