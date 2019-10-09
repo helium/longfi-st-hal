@@ -22,6 +22,7 @@ static BoardBindings_t DiscoveryBindings = {
 };
 
 void SystemClock_Config(void);
+void enter_sleep( void );
 
 /**
   * @brief  The application entry point.
@@ -94,15 +95,25 @@ int main(void)
   {
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
-    // Simulate work being done, could also sleep
-    HAL_Delay(500);
-
     if (transmit_packet == true)
     {
       longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
       transmit_packet = false;
     }
+
+    // Enter Low Power Mode
+    enter_sleep();
   }
+}
+
+void enter_sleep( void )
+{
+    /* Configure low-power mode */
+    SCB->SCR &= ~( SCB_SCR_SLEEPDEEP_Msk );  // low-power mode = sleep mode
+     
+    /* Ensure Flash memory stays on */
+    FLASH->ACR &= ~FLASH_ACR_SLEEP_PD;
+    __WFI();  // enter low-power mode
 }
 
 /**
