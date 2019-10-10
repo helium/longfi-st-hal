@@ -1,16 +1,15 @@
 language: c
 dist: bionic
 
-env:
-  matrix:
-    - TARGET="Boards/B-L072Z-LRWAN1/Examples/TransmitPacket"
-    - TARGET="Boards/B-L072Z-LRWAN1/Examples/ButtonTransmit"
-
 matrix:
   fast_finish: true
   include:
-    - name: 7-2018-q2
+    - name: transmit-packet-7-2018-q2
       env: GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2?revision=bc2c96c0-14b5-4bb4-9f18-bceb4050fee7?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,7-2018-q2-update
+      env: TARGET="Boards/B-L072Z-LRWAN1/Examples/TransmitPacket"
+    - name: button-transmit-packet-7-2018-q2
+      env: GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2?revision=bc2c96c0-14b5-4bb4-9f18-bceb4050fee7?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,7-2018-q2-update
+      env: TARGET="Boards/B-L072Z-LRWAN1/Examples/ButtonTransmit"
 
 install:
   - pushd .
@@ -24,7 +23,6 @@ install:
 
 before_script:
   - arm-none-eabi-gcc --version
-  # - cd Boards/B-L072Z-LRWAN1/Examples/TransmitPacket
 
 script:
   - make $TARGET
