@@ -158,21 +158,6 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
-
-  if (DIO0FIRED == true)
-  {
-    transmit_packet = true;
-  }
-}
-
-/**
   * @brief EXTI line detection callbacks
   * @param GPIO_Pin: Specifies the pins connected EXTI line
   * @retval None
