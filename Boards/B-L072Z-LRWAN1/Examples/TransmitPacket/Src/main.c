@@ -6,106 +6,13 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "lf_radio.h"
 
-#include "longfi.h"
-#include "board.h"
-#include "longfi.h"
-#include "radio/sx1276/sx1276.h"
-
-enum {
-	TRANSFER_WAIT,
-	TRANSFER_COMPLETE,
-	TRANSFER_ERROR
-};
-
-__IO uint32_t wTransferState = TRANSFER_WAIT;
 __IO ITStatus UartReady = RESET;
 static volatile bool DIO0FIRED = false;
+static volatile bool transmit_packet = false;
 
-void SystemClock_Config(void);
-
-void radio_reset(void)
-{
-  //Radio Reset
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET); 
-
-  HAL_Delay(1);
-
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
-
-  HAL_Delay(6);
-
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
-
-  HAL_Delay(1);
-
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
-}
-
-FlagStatus SpiGetFlag( uint16_t flag )
-{
-    FlagStatus bitstatus = RESET;
-
-    // Check the status of the specified SPI flag
-    if( ( hspi1.Instance->SR & flag ) != ( uint16_t )RESET )
-    {
-        // SPI_I2S_FLAG is set
-        bitstatus = SET;
-    }
-    else
-    {
-        // SPI_I2S_FLAG is reset
-        bitstatus = RESET;
-    }
-    // Return the SPI_I2S_FLAG status
-    return  bitstatus;
-}
-
-uint16_t DiscoverySpiInOut(Spi_t *s, uint16_t outData){
-    uint8_t rxData = 0;
-
-    __HAL_SPI_ENABLE( &hspi1 );
-
-    while( SpiGetFlag( SPI_FLAG_TXE ) == RESET );
-    hspi1.Instance->DR = ( uint16_t ) ( outData & 0xFF );
-
-    while( SpiGetFlag( SPI_FLAG_RXNE ) == RESET );
-    rxData = ( uint16_t ) hspi1.Instance->DR;
-
-    return( rxData );
-}
-
-void DiscoveryDelayMs(uint32_t ms){
-    HAL_Delay(ms);
-}
-
-void DiscoveryGpioInit(Gpio_t *obj,
-              PinNames pin,
-              PinModes mode,
-              PinConfigs config,
-              PinTypes pin_type,
-              uint32_t val){}
-
-
-
-void DiscoveryGpioWrite(Gpio_t *obj, uint32_t val){
-    if (val == 0) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
-
-    } else {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
-    }
-}
-
-uint32_t DiscoveryGpioRead(Gpio_t *obj){
-    return 0;
-}
-
-
-void DiscoveryGpioSetInterrupt(Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler){
-}
-
-static BoardBindings_t DiscoveryBindings  = {
+static BoardBindings_t DiscoveryBindings = {
     .spi_in_out = &DiscoverySpiInOut,
     .gpio_init = &DiscoveryGpioInit,
     .gpio_write = &DiscoveryGpioWrite,
@@ -113,6 +20,9 @@ static BoardBindings_t DiscoveryBindings  = {
     .gpio_set_interrupt = &DiscoveryGpioSetInterrupt,
     .delay_ms = &DiscoveryDelayMs,
 };
+
+void SystemClock_Config(void);
+void enter_sleep( void );
 
 /**
   * @brief  The application entry point.
@@ -133,7 +43,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   //MX_I2C2_Init();
-  //MX_TIM6_Init();
+  MX_TIM6_Init();
 
   // Turn Off User LEDS
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //LD1
@@ -148,9 +58,9 @@ int main(void)
   if (HAL_UART_Transmit_DMA(&huart2, startMsg, sizeof(startMsg)) != HAL_OK)
   {
     Error_Handler();
-  }  
+  }
 
-  while(UartReady != SET)
+  while (UartReady != SET)
   {
   }
 
@@ -170,15 +80,40 @@ int main(void)
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
 
+  // Start Timer 6 @ 2Hz
+  if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
+  {
+    /* Starting Error */
+    Error_Handler();
+  }
+
+  // Initial Packet Transmit
+  longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+
   /* Infinite loop */
   while (1)
   {
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
-    HAL_Delay(500);
+    if (transmit_packet == true)
+    {
+      longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+      transmit_packet = false;
+    }
 
-    longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+    // Enter Low Power Mode
+    enter_sleep();
   }
+}
+
+void enter_sleep( void )
+{
+    /* Configure low-power mode */
+    SCB->SCR &= ~( SCB_SCR_SLEEPDEEP_Msk );  // low-power mode = sleep mode
+     
+    /* Ensure Flash memory stays on */
+    FLASH->ACR &= ~FLASH_ACR_SLEEP_PD;
+    __WFI();  // enter low-power mode
 }
 
 /**
@@ -196,7 +131,7 @@ void SystemClock_Config(void)
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -210,8 +145,7 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -221,12 +155,27 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_RTC;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_RTC;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
+  }
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
+
+  if (DIO0FIRED == true)
+  {
+    transmit_packet = true;
   }
 }
 
@@ -242,30 +191,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     //Radio DI0 Interrupt
     DIO0FIRED = true;
   }
-}
-
-/**
-  * @brief  TxRx Transfer completed callback.
-  * @param  hspi: SPI handle
-  * @note   This example shows a simple way to report end of DMA TxRx transfer, and 
-  *         you can add your own implementation. 
-  * @retval None
-  */
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-  wTransferState = TRANSFER_COMPLETE;
-}
-
-/**
-  * @brief  SPI error callbacks.
-  * @param  hspi: SPI handle
-  * @note   This example shows a simple way to report transfer error, and you can
-  *         add your own implementation.
-  * @retval None
-  */
-void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
-{
-  wTransferState = TRANSFER_ERROR;
 }
 
 /**
@@ -316,7 +241,7 @@ void Error_Handler(void)
   }
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
@@ -325,7 +250,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

@@ -44,6 +44,7 @@ Src/rtc.c \
 Src/spi.c \
 Src/tim.c \
 Src/usart.c \
+Src/lf_radio.c \
 Src/stm32l0xx_it.c \
 Src/stm32l0xx_hal_msp.c \
 ../../../../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_i2c.c \
