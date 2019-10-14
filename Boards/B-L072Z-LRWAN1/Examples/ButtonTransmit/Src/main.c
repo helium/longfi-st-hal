@@ -86,6 +86,7 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
+    // Toggle LD2
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
     if (transmit_packet == true)
@@ -101,12 +102,18 @@ int main(void)
 
 void enter_sleep( void )
 {
-    /* Configure low-power mode */
-    SCB->SCR &= ~( SCB_SCR_SLEEPDEEP_Msk );  // low-power mode = sleep mode
-     
-    /* Ensure Flash memory stays on */
-    FLASH->ACR &= ~FLASH_ACR_SLEEP_PD;
-    __WFI();  // enter low-power mode
+    /*Suspend Tick increment to prevent wakeup by Systick interrupt. 
+    Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base)*/
+    HAL_SuspendTick();
+
+    /* Enable Power Control clock */
+    __HAL_RCC_PWR_CLK_ENABLE();
+
+    /* Enter Sleep Mode , wake up is done once Wkup/Tamper push-button is pressed */
+    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+
+    /* Resume Tick interrupt if disabled prior to sleep mode entry*/
+    HAL_ResumeTick();
 }
 
 /**
@@ -154,21 +161,6 @@ void SystemClock_Config(void)
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
-  }
-}
-
-/**
-  * @brief  Period elapsed callback in non blocking mode
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
-
-  if (DIO0FIRED == true)
-  {
-    transmit_packet = true;
   }
 }
 
