@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file      startup_stm32l072xx.s
+  * @file      startup_stm32l082xx.s
   * @author    MCD Application Team
-  * @brief     STM32L072xx Devices vector table for GCC toolchain.
+  * @brief     STM32L082xx Devices vector table for GCC toolchain.
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,
@@ -179,7 +179,7 @@ g_pfnVectors:
   .word     SPI2_IRQHandler                   /* SPI2                         */
   .word     USART1_IRQHandler                 /* USART1                       */
   .word     USART2_IRQHandler                 /* USART2                       */
-  .word     RNG_LPUART1_IRQHandler            /* RNG and LPUART1              */
+  .word     AES_RNG_LPUART1_IRQHandler        /* AES, RNG and LPUART1         */
   .word     0                                 /* Reserved                     */
   .word     USB_IRQHandler                    /* USB                          */
 
@@ -290,8 +290,8 @@ g_pfnVectors:
    .weak      USART2_IRQHandler
    .thumb_set USART2_IRQHandler,Default_Handler
 
-   .weak      RNG_LPUART1_IRQHandler
-   .thumb_set RNG_LPUART1_IRQHandler,Default_Handler
+   .weak      AES_RNG_LPUART1_IRQHandler
+   .thumb_set AES_RNG_LPUART1_IRQHandler,Default_Handler
 
    .weak      USB_IRQHandler
    .thumb_set USB_IRQHandler,Default_Handler
