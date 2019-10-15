@@ -37,7 +37,7 @@ FlagStatus SpiGetFlag( uint16_t flag )
     return  bitstatus;
 }
 
-uint16_t DiscoverySpiInOut(Spi_t *s, uint16_t outData){
+uint16_t DiscoverySpiInOut(LF_Spi_t *s, uint16_t outData){
     uint8_t rxData = 0;
 
     __HAL_SPI_ENABLE( &hspi1 );
@@ -55,7 +55,7 @@ void DiscoveryDelayMs(uint32_t ms){
     HAL_Delay(ms);
 }
 
-void DiscoveryGpioInit(Gpio_t *obj,
+void DiscoveryGpioInit(LF_Gpio_t *obj,
               PinNames pin,
               PinModes mode,
               PinConfigs config,
@@ -64,7 +64,7 @@ void DiscoveryGpioInit(Gpio_t *obj,
 
 
 
-void DiscoveryGpioWrite(Gpio_t *obj, uint32_t val){
+void DiscoveryGpioWrite(LF_Gpio_t *obj, uint32_t val){
     if (val == 0) {
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
 
@@ -73,9 +73,22 @@ void DiscoveryGpioWrite(Gpio_t *obj, uint32_t val){
     }
 }
 
-uint32_t DiscoveryGpioRead(Gpio_t *obj){
+uint32_t DiscoveryGpioRead(LF_Gpio_t *obj){
     return 0;
 }
 
-void DiscoveryGpioSetInterrupt(Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler){
+void DiscoveryGpioSetInterrupt(LF_Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler){
+}
+
+void enable_tcxo(LongFi_t * handle){
+    // Enable TCXO  
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+    HAL_Delay(6);
+    longfi_enable_tcxo(handle); 
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
 }
