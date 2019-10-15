@@ -56,16 +56,15 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_i2c2_rx;
-extern DMA_HandleTypeDef hdma_i2c2_tx;
+extern DMA_HandleTypeDef hdma_i2c1_rx;
+extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern RTC_HandleTypeDef hrtc;
-extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
-extern DMA_HandleTypeDef hdma_usart2_tx;
-extern DMA_HandleTypeDef hdma_usart2_rx;
-extern UART_HandleTypeDef huart2;
+extern DMA_HandleTypeDef hdma_spi1_tx;
 extern TIM_HandleTypeDef htim6;
-
+extern DMA_HandleTypeDef hdma_usart1_tx;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -149,20 +148,6 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles TIM6 global interrupt and DAC1/DAC2 underrun error interrupts.
-  */
-void TIM6_DAC_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
-
-  /* USER CODE END TIM6_DAC_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim6);
-  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
-
-  /* USER CODE END TIM6_DAC_IRQn 1 */
-}
-
-/**
   * @brief This function handles RTC global interrupt through EXTI lines 17, 19 and 20 and LSE CSS interrupt through EXTI line 19.
   */
 void RTC_IRQHandler(void)
@@ -177,35 +162,6 @@ void RTC_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI line 0 and line 1 interrupts.
-  */
-void EXTI0_1_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI0_1_IRQn 0 */
-
-  /* USER CODE END EXTI0_1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
-  /* USER CODE BEGIN EXTI0_1_IRQn 1 */
-
-  /* USER CODE END EXTI0_1_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line 0 and line 1 interrupts.
-  */
-void EXTI2_3_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI0_1_IRQn 0 */
-
-  /* USER CODE END EXTI0_1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
-  /* USER CODE BEGIN EXTI0_1_IRQn 1 */
-
-  /* USER CODE END EXTI0_1_IRQn 1 */
-}
-
-/**
   * @brief This function handles EXTI line 4 to 15 interrupts.
   */
 void EXTI4_15_IRQHandler(void)
@@ -214,7 +170,6 @@ void EXTI4_15_IRQHandler(void)
 
   /* USER CODE END EXTI4_15_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
   /* USER CODE BEGIN EXTI4_15_IRQn 1 */
 
   /* USER CODE END EXTI4_15_IRQn 1 */
@@ -243,26 +198,41 @@ void DMA1_Channel4_5_6_7_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel4_5_6_7_IRQn 0 */
 
   /* USER CODE END DMA1_Channel4_5_6_7_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_i2c2_tx);
-  HAL_DMA_IRQHandler(&hdma_i2c2_rx);
-  HAL_DMA_IRQHandler(&hdma_usart2_tx);
+  HAL_DMA_IRQHandler(&hdma_usart1_tx);
+  HAL_DMA_IRQHandler(&hdma_usart1_rx);
+  HAL_DMA_IRQHandler(&hdma_i2c1_tx);
+  HAL_DMA_IRQHandler(&hdma_i2c1_rx);
   /* USER CODE BEGIN DMA1_Channel4_5_6_7_IRQn 1 */
 
   /* USER CODE END DMA1_Channel4_5_6_7_IRQn 1 */
 }
 
 /**
-  * @brief This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
+  * @brief This function handles TIM6 global interrupt and DAC1/DAC2 underrun error interrupts.
   */
-void USART2_IRQHandler(void)
+void TIM6_DAC_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART2_IRQn 0 */
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
 
-  /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
-  /* USER CODE BEGIN USART2_IRQn 1 */
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
-  /* USER CODE END USART2_IRQn 1 */
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART1 global interrupt / USART1 wake-up interrupt through EXTI line 25.
+  */
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+
+  /* USER CODE END USART1_IRQn 0 */
+  HAL_UART_IRQHandler(&huart1);
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
