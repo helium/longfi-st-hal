@@ -80,7 +80,7 @@ Src/system_stm32l0xx.c \
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32l072xx.s
+startup_stm32l082xx.s
 
 
 #######################################
@@ -125,7 +125,7 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32L072xx 
+-DSTM32L082xx 
 
 
 # AS includes
@@ -159,7 +159,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32L072CZYx_FLASH.ld
+LDSCRIPT = STM32L082CZYx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
