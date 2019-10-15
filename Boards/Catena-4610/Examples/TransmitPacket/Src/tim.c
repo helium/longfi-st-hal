@@ -31,11 +31,11 @@ void MX_TIM6_Init(void)
 {
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  // Setup Timer for ~.5 Second Period Repeated
+  // Setup Timer for ~2 Second Period Repeated
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = (uint32_t)(SystemCoreClock / 2500) - 1; //12.8kHz
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 0x640; // 1/8 of 12,800, or 2Hz
+  htim6.Init.Period = 0x1900; // 1/2 of 12,800, or 0.5Hz
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
