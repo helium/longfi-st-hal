@@ -12,14 +12,14 @@ __IO ITStatus UartReady = RESET;
 static volatile bool DIO0FIRED = false;
 static volatile bool transmit_packet = false;
 
-static BoardBindings_t DiscoveryBindings = {
-    .spi_in_out = &DiscoverySpiInOut,
-    .gpio_init = &DiscoveryGpioInit,
-    .gpio_write = &DiscoveryGpioWrite,
-    .gpio_read = &DiscoveryGpioRead,
-    .gpio_set_interrupt = &DiscoveryGpioSetInterrupt,
-    .delay_ms = &DiscoveryDelayMs,
-};
+// static BoardBindings_t DiscoveryBindings = {
+//     .spi_in_out = &DiscoverySpiInOut,
+//     .gpio_init = &DiscoveryGpioInit,
+//     .gpio_write = &DiscoveryGpioWrite,
+//     .gpio_read = &DiscoveryGpioRead,
+//     .gpio_set_interrupt = &DiscoveryGpioSetInterrupt,
+//     .delay_ms = &DiscoveryDelayMs,
+// };
 
 void SystemClock_Config(void);
 void enter_sleep( void );
@@ -63,19 +63,19 @@ int main(void)
 
   UartReady = RESET;
 
-  Radio_t radio = SX1276RadioNew();
+  // Radio_t radio = SX1276RadioNew();
 
-  radio_reset();
+  // radio_reset();
 
-  RfConfig_t config = {
-      .oui = 1234,
-      .device_id = 99,
-  };
+  // RfConfig_t config = {
+  //     .oui = 1234,
+  //     .device_id = 99,
+  // };
 
-  LongFi_t handle = longfi_new_handle(&DiscoveryBindings, &radio, config);
-  longfi_init(&handle);
+  // LongFi_t handle = longfi_new_handle(&DiscoveryBindings, &radio, config);
+  // longfi_init(&handle);
 
-  enable_tcxo(&handle);
+  // enable_tcxo(&handle);
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
 
@@ -87,7 +87,7 @@ int main(void)
   }
 
   // Initial Packet Transmit
-  longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+  // longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
 
   /* Infinite loop */
   while (1)
@@ -97,7 +97,7 @@ int main(void)
 
     if (transmit_packet == true)
     {
-      longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+      // longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
       transmit_packet = false;
     }
 
