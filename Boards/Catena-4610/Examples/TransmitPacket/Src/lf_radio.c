@@ -56,11 +56,11 @@ void BoardDelayMs(uint32_t ms){
 }
 
 void BoardSpiNss(bool sel){
-    if (!sel) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+    if (sel) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
 
     } else {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
     }
 }
 
