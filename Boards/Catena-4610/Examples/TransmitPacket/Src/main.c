@@ -12,17 +12,25 @@ __IO ITStatus UartReady = RESET;
 static volatile bool DIO0FIRED = false;
 static volatile bool transmit_packet = false;
 
-// static BoardBindings_t DiscoveryBindings = {
-//     .spi_in_out = &DiscoverySpiInOut,
-//     .gpio_init = &DiscoveryGpioInit,
-//     .gpio_write = &DiscoveryGpioWrite,
-//     .gpio_read = &DiscoveryGpioRead,
-//     .gpio_set_interrupt = &DiscoveryGpioSetInterrupt,
-//     .delay_ms = &DiscoveryDelayMs,
-// };
+static BoardBindings_t BoardBindings = {
+    .spi_in_out = BoardSpiInOut,
+    .spi_nss = BoardSpiNss,
+    .reset = BoardReset,
+    .delay_ms = BoardDelayMs,
+    .get_random_bits = BoardGetRandomBits,
+    .busy_pin_status = NULL,
+    .reduce_power = NULL, 
+    .set_board_tcxo = BoardSetBoardTcxo,
+    .set_antenna_pins = NULL,
+};
 
 void SystemClock_Config(void);
 void enter_sleep( void );
+
+uint8_t preshared_key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+uint8_t *GetPresharedKey(){
+  return preshared_key;
+}
 
 /**
   * @brief  The application entry point.
@@ -63,21 +71,20 @@ int main(void)
 
   UartReady = RESET;
 
-  // Radio_t radio = SX1276RadioNew();
+  Radio_t radio = SX1276RadioNew();
 
-  // radio_reset();
+  union LongFiAuthCallbacks auth_cb = {.get_preshared_key = GetPresharedKey};
 
-  // RfConfig_t config = {
-  //     .oui = 1234,
-  //     .device_id = 99,
-  // };
+  LongFiConfig_t lf_config = {
+      .oui = 1234,
+      .device_id = 99,
+      .auth_mode = PresharedKey128, 
+  };
 
-  // LongFi_t handle = longfi_new_handle(&DiscoveryBindings, &radio, config);
-  // longfi_init(&handle);
+  LongFi_t handle = longfi_new_handle(&BoardBindings, &radio, lf_config, &auth_cb);
+  longfi_init(&handle);
 
-  // enable_tcxo(&handle);
-
-  uint8_t data[6] = {1, 2, 3, 4, 5, 6};
+  uint8_t data[9] = {1, 2, 3, 4, 5, 6, 8, 8, 8};
 
   /* Start Channel1 */
   if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
@@ -87,7 +94,7 @@ int main(void)
   }
 
   // Initial Packet Transmit
-  // longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+  longfi_send(&handle, data, sizeof(data));
 
   /* Infinite loop */
   while (1)
@@ -97,7 +104,7 @@ int main(void)
 
     if (transmit_packet == true)
     {
-      // longfi_send(&handle, LONGFI_QOS_0, data, sizeof(data));
+      longfi_send(&handle, data, sizeof(data));
       transmit_packet = false;
     }
 
