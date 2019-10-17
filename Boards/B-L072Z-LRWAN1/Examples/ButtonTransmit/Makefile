@@ -67,16 +67,8 @@ Src/stm32l0xx_hal_msp.c \
 ../../../../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
 ../../../../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
 ../../../../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
-Src/system_stm32l0xx.c \
-../../../../Drivers/longfi-device/longfi.c \
-../../../../Drivers/longfi-device/board.c \
-../../../../Drivers/longfi-device/radio/sx1276/sx1276.c \
-../../../../Drivers/longfi-device/radio/sx1276/sx1276-board.c \
-../../../../Drivers/longfi-device/radio/sx1272/sx1272.c \
-../../../../Drivers/longfi-device/radio/sx1272/sx1272-board.c \
-../../../../Drivers/longfi-device/radio/sx126x/sx126x.c \
-../../../../Drivers/longfi-device/radio/sx126x/sx126x-board.c \
-../../../../Drivers/longfi-device/radio/sx126x/radio.c 
+Src/system_stm32l0xx.c
+
 
 # ASM sources
 ASM_SOURCES =  \
@@ -162,8 +154,8 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32L072CZYx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
-LIBDIR = 
+LIBS = -lc -lm -lnosys -llongfi -lsx12xx
+LIBDIR = -L../../../../Drivers/longfi-device
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
