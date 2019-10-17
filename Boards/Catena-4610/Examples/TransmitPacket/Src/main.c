@@ -56,9 +56,6 @@ int main(void)
   // Turn Off User LED
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET); //LED
 
-  // SPI1 NSS SET HIGH
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
-
   uint8_t startMsg[] = "*** LongFi Transmit Packet ***";
   if (HAL_UART_Transmit_DMA(&huart1, startMsg, sizeof(startMsg)) != HAL_OK)
   {
