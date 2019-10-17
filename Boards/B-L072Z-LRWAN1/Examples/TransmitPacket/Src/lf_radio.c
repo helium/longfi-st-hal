@@ -1,6 +1,6 @@
 #include "lf_radio.h"
 
-void radio_reset(void)
+void BoardReset(bool enable)
 {
   //Radio Reset
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET); 
@@ -37,45 +37,61 @@ FlagStatus SpiGetFlag( uint16_t flag )
     return  bitstatus;
 }
 
-uint16_t DiscoverySpiInOut(Spi_t *s, uint16_t outData){
+uint8_t BoardSpiInOut(LF_Spi_t *s, uint8_t outData){
     uint8_t rxData = 0;
 
     __HAL_SPI_ENABLE( &hspi1 );
 
     while( SpiGetFlag( SPI_FLAG_TXE ) == RESET );
-    hspi1.Instance->DR = ( uint16_t ) ( outData & 0xFF );
+    hspi1.Instance->DR = ( uint8_t ) ( outData & 0xFF );
 
     while( SpiGetFlag( SPI_FLAG_RXNE ) == RESET );
-    rxData = ( uint16_t ) hspi1.Instance->DR;
+    rxData = ( uint8_t ) hspi1.Instance->DR;
 
     return( rxData );
 }
 
-void DiscoveryDelayMs(uint32_t ms){
+void BoardDelayMs(uint32_t ms){
     HAL_Delay(ms);
 }
 
-void DiscoveryGpioInit(Gpio_t *obj,
-              PinNames pin,
-              PinModes mode,
-              PinConfigs config,
-              PinTypes pin_type,
-              uint32_t val){}
-
-
-
-void DiscoveryGpioWrite(Gpio_t *obj, uint32_t val){
-    if (val == 0) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+void BoardSpiNss(bool sel){
+    if (sel) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
 
     } else {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
     }
 }
 
-uint32_t DiscoveryGpioRead(Gpio_t *obj){
+uint32_t BoardGetRandomBits(uint8_t seed)
+{
+    return 0x1;
+}
+
+bool BoardBusyPinStatus(void)
+{
+    return true;
+}
+
+uint8_t BoardReducePower(uint8_t amount)
+{
     return 0;
 }
 
-void DiscoveryGpioSetInterrupt(Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler){
+uint8_t BoardSetBoardTcxo(bool enable)
+{
+    if(enable)
+    {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+    }
+    return 6;
+}
+
+void BoardSetAntennaPins(AntPinsMode_t mode, uint8_t power)
+{
 }
