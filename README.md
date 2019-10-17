@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/helium/longfi-st-hal.svg?token=bzKc8EpW7xxqudyhDiz1&branch=master)](https://travis-ci.com/helium/longfi-st-hal)
 
-LongFi Examples Using ST HAL Libraries
+LongFi Examples Using ST HAL Libraries and [LongFi Device Protocol](https://github.com/helium/longfi-device) library.
 
 ## Board Support
 
@@ -29,8 +29,13 @@ make
 ```
 
 ## Directory Layout
-**`Drivers`**: Shared drivers and libraries for all example projects.
 
 **`Boards`**: Collection of Board specific examples.
 
+**`Drivers`**: Shared drivers and libraries for all example projects.
 
+**`Drivers/CMSIS`**:  Cortex Microcontroller Software Interface Standard.
+
+**`Drivers/longfi-device`**: Statically compiled [LongFi Device Protocol](https://github.com/helium/longfi-device) library. 
+
+**`Drivers/STM32L0xx_HAL_Driver`**: ST HAL Driver libraries for STM32L0xx chips. 

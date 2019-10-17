@@ -3,28 +3,22 @@
 
 #include "longfi.h"
 #include "board.h"
-#include "longfi.h"
 #include "radio/sx1276/sx1276.h"
 
-void radio_reset(void);
+uint8_t BoardSpiInOut(LF_Spi_t *s, uint8_t outData);
 
-FlagStatus SpiGetFlag( uint16_t flag );
+void BoardSpiNss(bool sel);
 
-uint16_t DiscoverySpiInOut(LF_Spi_t *s, uint16_t outData);
+void BoardReset(bool enable);
 
-void DiscoveryDelayMs(uint32_t ms);
+void BoardDelayMs(uint32_t ms);
 
-void DiscoveryGpioInit(LF_Gpio_t *obj,
-              PinNames pin,
-              PinModes mode,
-              PinConfigs config,
-              PinTypes pin_type,
-              uint32_t val);
+uint32_t BoardGetRandomBits(uint8_t);
 
-void DiscoveryGpioWrite(LF_Gpio_t *obj, uint32_t val);
+bool BoardBusyPinStatus(void);
 
-uint32_t DiscoveryGpioRead(LF_Gpio_t *obj);
+uint8_t BoardReducePower(uint8_t);
 
-void DiscoveryGpioSetInterrupt(LF_Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler);
+uint8_t BoardSetBoardTcxo(bool enable);
 
-void enable_tcxo(LongFi_t * handle);
+void BoardSetAntennaPins(AntPinsMode_t mode, uint8_t power);
