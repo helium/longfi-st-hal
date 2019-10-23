@@ -70,7 +70,7 @@ int main(void)
 
   Radio_t radio = SX1276RadioNew();
 
-  union LongFiAuthCallbacks auth_cb = {.get_preshared_key = GetPresharedKey};
+  union LongFiAuthCallbacks auth_cb = {.preshared_key = preshared_key};
 
   LongFiConfig_t lf_config = {
       .oui = 1234,
@@ -78,10 +78,10 @@ int main(void)
       .auth_mode = PresharedKey128, 
   };
 
-  LongFi_t handle = longfi_new_handle(&BoardBindings, &radio, lf_config, &auth_cb);
+  LongFi_t handle = longfi_new_handle(&BoardBindings, &radio, lf_config, auth_cb);
   longfi_init(&handle);
 
-  uint8_t data[9] = {1, 2, 3, 4, 5, 6, 8, 8, 8};
+  uint8_t data[6] = {1, 2, 3, 4, 5, 6};
 
   /* Start Channel1 */
   if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
