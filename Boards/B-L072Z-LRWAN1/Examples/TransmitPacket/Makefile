@@ -156,7 +156,7 @@ LDSCRIPT = STM32L072CZYx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys -llongfi -lsx12xx -llfc -lcursor -lblake2 -lcursor_varint -lgolay
 LIBDIR = -L../../../../Drivers/longfi-device 
-LDFLAGS = $(MCU) -specs=nano.specs --specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
