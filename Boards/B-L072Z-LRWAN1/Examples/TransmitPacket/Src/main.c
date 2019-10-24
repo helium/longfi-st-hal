@@ -10,7 +10,7 @@
 
 __IO ITStatus UartReady = RESET;
 static volatile bool DIO0FIRED = false;
-static volatile bool transmit_packet = false;
+static volatile bool transmit_packet = true;
 
 static BoardBindings_t BoardBindings = {
     .spi_in_out = BoardSpiInOut,
@@ -95,9 +95,6 @@ int main(void)
     /* Starting Error */
     Error_Handler();
   }
-
-  // Initial Packet Transmit
-  longfi_send(&handle, data, sizeof(data));
 
   /* Infinite loop */
   while (1)
