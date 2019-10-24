@@ -9,7 +9,7 @@
 #include "lf_radio.h"
 
 __IO ITStatus UartReady = RESET;
-static volatile bool DIO0FIRED = false;
+static volatile bool DIO0FIRED = true;
 static volatile bool transmit_packet = false;
 
 static BoardBindings_t BoardBindings = {
@@ -89,9 +89,6 @@ int main(void)
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
   
-  // Initial Packet Transmit
-  longfi_send(&handle, data, sizeof(data));
-
   /* Infinite loop */
   while (1)
   {
