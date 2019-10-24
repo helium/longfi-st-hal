@@ -206,14 +206,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     //Radio DI0 Interrupt
     DIO0FIRED = true;
   }
-  
-  if(GPIO_Pin == GPIO_PIN_2)
-  {
-    if (DIO0FIRED == true)
-    {
-      transmit_packet = true;
-    }
-  }
 }
 
 /**
