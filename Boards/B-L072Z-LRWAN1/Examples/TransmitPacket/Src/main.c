@@ -12,25 +12,8 @@ __IO ITStatus UartReady = RESET;
 static volatile bool DIO0FIRED = false;
 static volatile bool transmit_packet = true;
 
-static BoardBindings_t BoardBindings = {
-    .spi_in_out = BoardSpiInOut,
-    .spi_nss = BoardSpiNss,
-    .reset = BoardReset,
-    .delay_ms = BoardDelayMs,
-    .get_random_bits = BoardGetRandomBits,
-    .busy_pin_status = NULL,
-    .reduce_power = NULL, 
-    .set_board_tcxo = BoardSetBoardTcxo,
-    .set_antenna_pins = NULL,
-};
-
 void SystemClock_Config(void);
 void enter_sleep( void );
-
-uint8_t preshared_key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
-uint8_t *GetPresharedKey(){
-  return preshared_key;
-}
 
 /**
   * @brief  The application entry point.
@@ -74,18 +57,9 @@ int main(void)
 
   UartReady = RESET;
 
-  Radio_t radio = SX1276RadioNew();
-
-  union LongFiAuthCallbacks auth_cb = {.preshared_key = preshared_key};
-
-  LongFiConfig_t lf_config = {
-      .oui = 1234,
-      .device_id = 99,
-      .auth_mode = PresharedKey128, 
-  };
-
-  LongFi_t handle = longfi_new_handle(&BoardBindings, &radio, lf_config, auth_cb);
-  longfi_init(&handle);
+  // Init LongFi 
+  LongFi_t handle;
+  LongFiInit(&handle);
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
 
