@@ -74,10 +74,15 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
-    if (transmit_packet == true)
+    if (TRANSMIT_PACKET == true)
     {
+      // Send LongFi Packet
       longfi_send(&handle, data, sizeof(data));
-      transmit_packet = false;
+      // Turn LED LD3 to indicate beginning to TX
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+      // Reset Flags
+      TRANSMIT_PACKET = false;
+      TX_COMPLETE = false;
     }
 
     if (DIO0_FIRED == true)
@@ -159,10 +164,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (TX_COMPLETE == true)
   {
-    // Turn LED LD3 ON
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
     // TX Next Packet in main
-    transmit_packet = true;
+    TRANSMIT_PACKET = true;
   }
 }
 

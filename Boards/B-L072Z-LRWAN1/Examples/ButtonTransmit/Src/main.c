@@ -73,8 +73,10 @@ int main(void)
       // Turn LED LD3 to indicate beginning to TX
       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
       // Reset Flags
+      __disable_irq();
       TRANSMIT_PACKET = false;
       TX_COMPLETE = false;
+      __enable_irq();
     }
 
     if (DIO0_FIRED == true)
@@ -82,14 +84,18 @@ int main(void)
       switch(longfi_handle_event(&handle, DIO0))
       {
         case ClientEvent_TxDone:
+          __disable_irq();
           TX_COMPLETE = true;
+          __enable_irq();
           // Turn LED LD3 OFF to indicate completion
           HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
           break;
         default:
           break;
       }
+      __disable_irq();
       DIO0_FIRED = false;
+      __enable_irq();
     }
 
     // Delaying as placeholder for sleep or low power mode
