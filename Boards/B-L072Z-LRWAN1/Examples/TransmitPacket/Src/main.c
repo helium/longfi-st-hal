@@ -83,8 +83,10 @@ int main(void)
       transmit_packet = false;
     }
 
-    // Enter Low Power Mode
-    enter_sleep();
+    // Enter Low Power Mode !! Cannot Debug When Using This
+    //enter_sleep();
+    // OR delay
+    HAL_Delay(100);
   }
 }
 
