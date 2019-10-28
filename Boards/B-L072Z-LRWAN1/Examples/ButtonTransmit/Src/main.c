@@ -11,7 +11,7 @@
 __IO ITStatus UartReady = RESET;
 static volatile bool DIO0_FIRED = false;
 static volatile bool TX_COMPLETE = true;
-static volatile bool transmit_packet = false;
+static volatile bool TRANSMIT_PACKET = false;
 LongFi_t handle;
 
 void SystemClock_Config(void);
@@ -66,10 +66,14 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
-    if (transmit_packet == true)
+    if (TRANSMIT_PACKET == true)
     {
+      // Send LongFi Packet
       longfi_send(&handle, data, sizeof(data));
-      transmit_packet = false;
+      // Turn LED LD3 to indicate beginning to TX
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+      // Reset Flags
+      TRANSMIT_PACKET = false;
       TX_COMPLETE = false;
     }
 
@@ -150,19 +154,19 @@ void SystemClock_Config(void)
   */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+  // DIO0 Pin Rising Interrupt
   if (GPIO_Pin == GPIO_PIN_4)
   {
     DIO0_FIRED = true;
   } 
   
+  // User Button Rising Interrupt
   if(GPIO_Pin == GPIO_PIN_2)
   {
     if (TX_COMPLETE == true)
     {
-      // Turn LED LD3 ON
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
       // TX Next Packet in main
-      transmit_packet = true;
+      TRANSMIT_PACKET = true;
     }
   }
 }
