@@ -9,6 +9,7 @@
 #include "lf_radio.h"
 
 __IO ITStatus UartReady = RESET;
+static volatile bool DIO0_FIRED = false;
 static volatile bool TX_COMPLETE = true;
 static volatile bool transmit_packet = false;
 LongFi_t handle;
@@ -69,6 +70,22 @@ int main(void)
     {
       longfi_send(&handle, data, sizeof(data));
       transmit_packet = false;
+      TX_COMPLETE = false;
+    }
+
+    if (DIO0_FIRED == true)
+    {
+      switch(longfi_handle_event(&handle, DIO0))
+      {
+        case ClientEvent_TxDone:
+          TX_COMPLETE = true;
+          // Turn LED LD3 OFF to indicate completion
+          HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+          break;
+        default:
+          break;
+      }
+      DIO0_FIRED = false;
     }
 
     // Delaying as placeholder for sleep or low power mode
@@ -135,27 +152,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if (GPIO_Pin == GPIO_PIN_4)
   {
-    // Dispatch DIO0 Event
-    switch(longfi_handle_event(&handle, DIO0))
-    {
-      case ClientEvent_TxDone:
-        // Update flag for main control
-        TX_COMPLETE = true;
-        // Turn LED LD3 OFF to indicate completion
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-        break;
-      default:
-        break;
-    }
+    DIO0_FIRED = true;
   } 
   
   if(GPIO_Pin == GPIO_PIN_2)
   {
-    // Turn LED LD3 ON
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
-    
     if (TX_COMPLETE == true)
     {
+      // Turn LED LD3 ON
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+      // TX Next Packet in main
       transmit_packet = true;
     }
   }
