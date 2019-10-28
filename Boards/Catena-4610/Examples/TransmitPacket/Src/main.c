@@ -9,8 +9,9 @@
 #include "lf_radio.h"
 
 __IO ITStatus UartReady = RESET;
+static volatile bool DIO0_FIRED = false;
 static volatile bool TX_COMPLETE = false;
-static volatile bool transmit_packet = true;
+static volatile bool TRANSMIT_PACKET = true;
 LongFi_t handle;
 
 void SystemClock_Config(void);
@@ -66,10 +67,36 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
-    if (transmit_packet == true)
+    if (TRANSMIT_PACKET == true)
     {
+      // Send LongFi Packet
       longfi_send(&handle, data, sizeof(data));
-      transmit_packet = false;
+      // Turn LED LD3 ON to indicate beginning of TX
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
+      // Reset Flags
+      __disable_irq();
+      TRANSMIT_PACKET = false;
+      TX_COMPLETE = false;
+      __enable_irq(); 
+    }
+
+    if (DIO0_FIRED == true)
+    {
+      switch(longfi_handle_event(&handle, DIO0))
+      {
+        case ClientEvent_TxDone:
+          __disable_irq();
+          TX_COMPLETE = true;
+          __enable_irq();
+          // Turn LED LD3 OFF to indicate completion of TX
+          HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+          break;
+        default:
+          break;
+      }
+      __disable_irq();
+      DIO0_FIRED = false;
+      __enable_irq();
     }
 
     // Delaying as placeholder for sleep or low power mode
@@ -136,12 +163,10 @@ void SystemClock_Config(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // Turn LED LD3 ON
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
-
   if (TX_COMPLETE == true)
   {
-    transmit_packet = true;
+    // TX Next Packet in main
+    TRANSMIT_PACKET = true;
   }
 }
 
@@ -152,20 +177,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+  // DIO0 Pin Rising Interrupt 
   if (GPIO_Pin == GPIO_PIN_4)
   {
-    // Dispatch DIO0 Event
-    switch(longfi_handle_event(&handle, DIO0))
-    {
-      case ClientEvent_TxDone:
-        // Update flag for main control
-        TX_COMPLETE = true;
-        // Turn LED LD3 OFF to indicate completion
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
-        break;
-      default:
-        break;
-    }
+    DIO0_FIRED = true;
   }
 }
 
