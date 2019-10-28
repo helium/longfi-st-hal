@@ -178,12 +178,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     // Dispatch DIO0 Event
     switch(longfi_handle_event(&handle, DIO0))
     {
-      case ClientEvent_None:
-        break;
       case ClientEvent_TxDone:
         TX_COMPLETE = true;
-        break;
-      case ClientEvent_Rx:
         break;
       default:
         break;
