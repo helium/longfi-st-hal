@@ -70,7 +70,7 @@ int main(void)
     {
       // Send LongFi Packet
       longfi_send(&handle, data, sizeof(data));
-      // Turn LED LD3 to indicate beginning to TX
+      // Turn LED LD3 ON to indicate beginning of TX
       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
       // Reset Flags
       __disable_irq();
@@ -87,7 +87,7 @@ int main(void)
           __disable_irq();
           TX_COMPLETE = true;
           __enable_irq();
-          // Turn LED LD3 OFF to indicate completion
+          // Turn LED LD3 OFF to indicate completion of TX
           HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
           break;
         default:
