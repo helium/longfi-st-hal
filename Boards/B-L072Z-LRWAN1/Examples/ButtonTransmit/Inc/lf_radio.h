@@ -5,6 +5,8 @@
 #include "board.h"
 #include "radio/sx1276/sx1276.h"
 
+void LongFiInit(LongFi_t *handle);
+
 uint8_t BoardSpiInOut(LF_Spi_t *s, uint8_t outData);
 
 void BoardSpiNss(bool sel);
