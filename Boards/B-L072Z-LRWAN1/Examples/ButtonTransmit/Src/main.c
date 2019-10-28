@@ -14,7 +14,6 @@ static volatile bool transmit_packet = false;
 LongFi_t handle;
 
 void SystemClock_Config(void);
-void enter_sleep( void );
 
 /**
   * @brief  The application entry point.
@@ -66,36 +65,17 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
-    // Toggle LD2
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-
     if (transmit_packet == true)
     {
       longfi_send(&handle, data, sizeof(data));
       transmit_packet = false;
     }
 
-    // Enter Low Power Mode !! Cannot Debug When Using This
-    //enter_sleep();
-    // OR delay
-    HAL_Delay(100); 
+    // Delaying as placeholder for sleep or low power mode
+    HAL_Delay(100);
+    // Toggle LD2 to indicate main control flow
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); 
   }
-}
-
-void enter_sleep( void )
-{
-    /*Suspend Tick increment to prevent wakeup by Systick interrupt. 
-    Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base)*/
-    HAL_SuspendTick();
-
-    /* Enable Power Control clock */
-    __HAL_RCC_PWR_CLK_ENABLE();
-
-    /* Enter Sleep Mode , wake up is done once Wkup/Tamper push-button is pressed */
-    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-
-    /* Resume Tick interrupt if disabled prior to sleep mode entry*/
-    HAL_ResumeTick();
 }
 
 /**
