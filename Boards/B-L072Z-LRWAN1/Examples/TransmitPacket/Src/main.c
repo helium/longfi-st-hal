@@ -11,7 +11,7 @@
 __IO ITStatus UartReady = RESET;
 static volatile bool DIO0_FIRED = false;
 static volatile bool TX_COMPLETE = false;
-static volatile bool transmit_packet = true;
+static volatile bool TRANSMIT_PACKET = true;
 LongFi_t handle;
 
 void SystemClock_Config(void);
@@ -59,7 +59,6 @@ int main(void)
   UartReady = RESET;
 
   // Init LongFi 
-  LongFi_t handle;
   LongFiInit(&handle);
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
@@ -78,11 +77,13 @@ int main(void)
     {
       // Send LongFi Packet
       longfi_send(&handle, data, sizeof(data));
-      // Turn LED LD3 to indicate beginning to TX
+      // Turn LED LD3 ON to indicate beginning of TX
       HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
       // Reset Flags
+      __disable_irq();
       TRANSMIT_PACKET = false;
       TX_COMPLETE = false;
+      __enable_irq(); 
     }
 
     if (DIO0_FIRED == true)
@@ -90,14 +91,18 @@ int main(void)
       switch(longfi_handle_event(&handle, DIO0))
       {
         case ClientEvent_TxDone:
+          __disable_irq();
           TX_COMPLETE = true;
-          // Turn LED LD3 OFF to indicate completion
+          __enable_irq();
+          // Turn LED LD3 OFF to indicate completion of TX
           HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
           break;
         default:
           break;
       }
+      __disable_irq();
       DIO0_FIRED = false;
+      __enable_irq();
     }
     
     // Delaying as placeholder for sleep or low power mode
