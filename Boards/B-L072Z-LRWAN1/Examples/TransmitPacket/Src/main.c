@@ -74,6 +74,7 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
+    // Toggle LD2 to indicate main control flow
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
     if (transmit_packet == true)
@@ -158,7 +159,8 @@ void SystemClock_Config(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
+  // Turn LED LD3 ON
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 
   if (TX_COMPLETE == true)
   {
@@ -179,7 +181,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     switch(longfi_handle_event(&handle, DIO0))
     {
       case ClientEvent_TxDone:
+        // Update flag for main control
         TX_COMPLETE = true;
+        // Turn LED LD3 OFF to indicate completion
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
         break;
       default:
         break;
