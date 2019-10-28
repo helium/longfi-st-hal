@@ -9,6 +9,7 @@
 #include "lf_radio.h"
 
 __IO ITStatus UartReady = RESET;
+static volatile bool DIO0_FIRED = false;
 static volatile bool TX_COMPLETE = false;
 static volatile bool transmit_packet = true;
 LongFi_t handle;
@@ -81,6 +82,21 @@ int main(void)
     {
       longfi_send(&handle, data, sizeof(data));
       transmit_packet = false;
+    }
+
+    if (DIO0_FIRED == true)
+    {
+      switch(longfi_handle_event(&handle, DIO0))
+      {
+        case ClientEvent_TxDone:
+          TX_COMPLETE = true;
+          // Turn LED LD3 OFF to indicate completion
+          HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+          break;
+        default:
+          break;
+      }
+      DIO0_FIRED = false;
     }
 
     // Enter Low Power Mode !! Cannot Debug When Using This
@@ -161,11 +177,11 @@ void SystemClock_Config(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // Turn LED LD3 ON
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
-
   if (TX_COMPLETE == true)
   {
+    // Turn LED LD3 ON
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+    // TX Next Packet in main
     transmit_packet = true;
   }
 }
@@ -177,20 +193,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+  // DIO0 Pin Rising Interrupt 
   if (GPIO_Pin == GPIO_PIN_4)
   {
-    // Dispatch DIO0 Event
-    switch(longfi_handle_event(&handle, DIO0))
-    {
-      case ClientEvent_TxDone:
-        // Update flag for main control
-        TX_COMPLETE = true;
-        // Turn LED LD3 OFF to indicate completion
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-        break;
-      default:
-        break;
-    }
+    DIO0_FIRED = true;
   }
 }
 
