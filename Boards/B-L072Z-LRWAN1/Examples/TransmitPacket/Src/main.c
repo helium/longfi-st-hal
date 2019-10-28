@@ -9,8 +9,9 @@
 #include "lf_radio.h"
 
 __IO ITStatus UartReady = RESET;
-static volatile bool DIO0FIRED = false;
+static volatile bool TX_COMPLETE = false;
 static volatile bool transmit_packet = true;
+LongFi_t handle;
 
 void SystemClock_Config(void);
 void enter_sleep( void );
@@ -159,7 +160,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
 
-  if (DIO0FIRED == true)
+  if (TX_COMPLETE == true)
   {
     transmit_packet = true;
   }
@@ -174,8 +175,19 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if (GPIO_Pin == GPIO_PIN_4)
   {
-    //Radio DI0 Interrupt
-    DIO0FIRED = true;
+    // Dispatch DIO0 Event
+    switch(longfi_handle_event(&handle, DIO0))
+    {
+      case ClientEvent_None:
+        break;
+      case ClientEvent_TxDone:
+        TX_COMPLETE = true;
+        break;
+      case ClientEvent_Rx:
+        break;
+      default:
+        break;
+    }
   }
 }
 
