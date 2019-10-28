@@ -1,5 +1,40 @@
 #include "lf_radio.h"
 
+static BoardBindings_t BoardBindings = {
+    .spi_in_out = BoardSpiInOut,
+    .spi_nss = BoardSpiNss,
+    .reset = BoardReset,
+    .delay_ms = BoardDelayMs,
+    .get_random_bits = BoardGetRandomBits,
+    .busy_pin_status = NULL,
+    .reduce_power = NULL, 
+    .set_board_tcxo = BoardSetBoardTcxo,
+    .set_antenna_pins = NULL,
+};
+
+uint8_t preshared_key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+uint8_t *GetPresharedKey(){
+  return preshared_key;
+}
+
+Radio_t radio;
+
+union LongFiAuthCallbacks auth_cb = {.preshared_key = preshared_key};
+
+LongFiConfig_t lf_config = {
+    .oui = 1234,
+    .device_id = 99,
+    .auth_mode = PresharedKey128, 
+};
+
+void LongFiInit(LongFi_t *handle)
+{
+  radio = SX1276RadioNew();
+
+  *handle = longfi_new_handle(&BoardBindings, &radio, lf_config, auth_cb);
+  longfi_init(handle);
+}
+
 void BoardReset(bool enable)
 {
   //Radio Reset
