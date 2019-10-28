@@ -9,11 +9,12 @@
 #include "lf_radio.h"
 
 __IO ITStatus UartReady = RESET;
-static volatile bool DIO0FIRED = false;
-static volatile bool transmit_packet = true;
+static volatile bool DIO0_FIRED = false;
+static volatile bool TX_COMPLETE = false;
+static volatile bool TRANSMIT_PACKET = true;
+LongFi_t handle;
 
 void SystemClock_Config(void);
-void enter_sleep( void );
 
 /**
   * @brief  The application entry point.
@@ -52,7 +53,6 @@ int main(void)
   UartReady = RESET;
 
   // Init LongFi 
-  LongFi_t handle;
   LongFiInit(&handle);
 
   uint8_t data[6] = {1, 2, 3, 4, 5, 6};
@@ -67,34 +67,41 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
-    // Toggle RED LED To Indicate Loop Cycle
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2);
-
-    if (transmit_packet == true)
+    if (TRANSMIT_PACKET == true)
     {
+      // Send LongFi Packet
       longfi_send(&handle, data, sizeof(data));
-      transmit_packet = false;
+      // Turn LED LD3 ON to indicate beginning of TX
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
+      // Reset Flags
+      __disable_irq();
+      TRANSMIT_PACKET = false;
+      TX_COMPLETE = false;
+      __enable_irq(); 
     }
 
-    // Enter Low Power Mode
-    enter_sleep();
+    if (DIO0_FIRED == true)
+    {
+      switch(longfi_handle_event(&handle, DIO0))
+      {
+        case ClientEvent_TxDone:
+          __disable_irq();
+          TX_COMPLETE = true;
+          __enable_irq();
+          // Turn LED LD3 OFF to indicate completion of TX
+          HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+          break;
+        default:
+          break;
+      }
+      __disable_irq();
+      DIO0_FIRED = false;
+      __enable_irq();
+    }
+
+    // Delaying as placeholder for sleep or low power mode
+    HAL_Delay(100);
   }
-}
-
-void enter_sleep( void )
-{
-    /*Suspend Tick increment to prevent wakeup by Systick interrupt. 
-    Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base)*/
-    HAL_SuspendTick();
-
-    /* Enable Power Control clock */
-    __HAL_RCC_PWR_CLK_ENABLE();
-
-    /* Enter Sleep Mode , wake up is done once Wkup/Tamper push-button is pressed */
-    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-
-    /* Resume Tick interrupt if disabled prior to sleep mode entry*/
-    HAL_ResumeTick();
 }
 
 /**
@@ -156,11 +163,10 @@ void SystemClock_Config(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_6);
-
-  if (DIO0FIRED == true)
+  if (TX_COMPLETE == true)
   {
-    transmit_packet = true;
+    // TX Next Packet in main
+    TRANSMIT_PACKET = true;
   }
 }
 
@@ -171,10 +177,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+  // DIO0 Pin Rising Interrupt 
   if (GPIO_Pin == GPIO_PIN_4)
   {
-    //Radio DI0 Interrupt
-    DIO0FIRED = true;
+    DIO0_FIRED = true;
   }
 }
 
