@@ -1,5 +1,6 @@
 #include "spi.h"
 #include "gpio.h"
+#include "rng.h"
 
 #include "longfi.h"
 #include "board.h"
