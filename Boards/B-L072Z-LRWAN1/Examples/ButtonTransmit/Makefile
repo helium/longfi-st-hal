@@ -67,7 +67,9 @@ Src/stm32l0xx_hal_msp.c \
 ../../../../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
 ../../../../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
 ../../../../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
-Src/system_stm32l0xx.c
+Src/system_stm32l0xx.c \
+Src/rng.c \
+Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rng.c
 
 
 # ASM sources

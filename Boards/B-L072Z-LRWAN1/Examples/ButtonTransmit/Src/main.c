@@ -6,6 +6,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "rng.h"
 #include "lf_radio.h"
 
 __IO ITStatus UartReady = RESET;
@@ -36,6 +37,7 @@ int main(void)
   MX_USART2_UART_Init();
   //MX_I2C2_Init();
   //MX_TIM6_Init();
+  MX_RNG_Init();
 
   // Turn Off User LEDS
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //LD1
@@ -144,9 +146,10 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_RTC;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_USB;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
