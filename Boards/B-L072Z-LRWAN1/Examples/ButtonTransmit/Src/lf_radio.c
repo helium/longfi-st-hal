@@ -99,9 +99,15 @@ void BoardSpiNss(bool sel){
     }
 }
 
-uint32_t BoardGetRandomBits(uint8_t seed)
+uint32_t BoardGetRandomBits(uint8_t rParam)
 {
-    return 0x1;
+    uint32_t rnum;
+    if (HAL_RNG_GenerateRandomNumber(&hrng, &rnum) != HAL_OK)
+    {
+        /* Random number generation error */
+        Error_Handler();      
+    } 
+    return rnum;
 }
 
 bool BoardBusyPinStatus(void)
