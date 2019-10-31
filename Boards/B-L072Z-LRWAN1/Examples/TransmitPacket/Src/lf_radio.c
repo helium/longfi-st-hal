@@ -53,7 +53,7 @@ void BoardReset(bool enable)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
 }
 
-FlagStatus SpiGetFlag(uint16_t flag )
+FlagStatus SpiGetFlag(uint16_t flag)
 {
     FlagStatus bitstatus = RESET;
 
