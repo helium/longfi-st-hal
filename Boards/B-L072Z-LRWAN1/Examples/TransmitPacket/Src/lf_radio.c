@@ -53,7 +53,7 @@ void BoardReset(bool enable)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
 }
 
-FlagStatus SpiGetFlag( uint16_t flag )
+FlagStatus SpiGetFlag(uint16_t flag )
 {
     FlagStatus bitstatus = RESET;
 
@@ -72,7 +72,7 @@ FlagStatus SpiGetFlag( uint16_t flag )
     return  bitstatus;
 }
 
-uint8_t BoardSpiInOut(LF_Spi_t *s, uint8_t outData){
+uint8_t BoardSpiInOut(uint8_t outData){
     uint8_t rxData = 0;
 
     __HAL_SPI_ENABLE( &hspi1 );
