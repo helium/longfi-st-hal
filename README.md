@@ -22,6 +22,18 @@ Visit our developer docs for a quickstart guide [here](https://developer.helium.
 ## Examples: 
 * `Boards/'board name'/Examples`
 
+## LongFi Config
+In each example there is a `src/lf_radio.c` file, which contains the LongFi config needed to route packets to Helium Console.
+```c
+uint8_t preshared_key[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+
+LongFiConfig_t lf_config = {
+    .oui = 1234,
+    .device_id = 99,
+    .auth_mode = PresharedKey128, 
+};
+```
+
 ## Compile
 ```
 cd Boards/'board name'/Examples/'example name'
